@@ -101,16 +101,16 @@ load_conda(
     install_mamba = True,
     mamba_version = "1.4.2",
     quiet = False,
-    timeout = 100,
+    timeout = 600,
 )
 
 conda_create(
     name = "env",  # name of the environment
-    environment = "@//:empty_environment.yaml",  # label pointing to environment configuration file
+    environment = "@//:conda_environment.yaml",  # label pointing to environment configuration file
     use_mamba = True,  # Whether to use mamba to create the conda environment. If this is True, install_mamba must also be True
     clean = False,  # True if conda cache should be cleaned (less space taken, but slower subsequent builds), default is False
     quiet = False,  # True if conda output should be hidden True, default is True
-    timeout = 100,  # how many seconds each execute action can take, default is 3600
+    timeout = 600,  # how many seconds each execute action can take, default is 3600
 )
 
 register_toolchain(env = "env")
