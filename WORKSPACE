@@ -30,34 +30,87 @@ http_archive(
     ),
 )
 
-load(
-    "@rules_python//python:repositories.bzl",
-    "py_repositories",
-    "python_register_toolchains",
-)
-load("@rules_python//python:pip.bzl", "pip_parse")
+# load(
+#     "@rules_python//python:repositories.bzl",
+#     "py_repositories",
+#     "python_register_toolchains",
+# )
+# load("@rules_python//python:pip.bzl", "pip_parse")
 
-py_repositories()
+# py_repositories()
 
-python_register_toolchains(
-    name="test_torch_python",
-    python_version="3.10",
-    register_coverage_tool=True,
-)
+# python_register_toolchains(
+#     name="test_torch_python",
+#     python_version="3.10",
+#     register_coverage_tool=True,
+# )
 
-load("@test_torch_python//:defs.bzl", "interpreter")
-load("@rules_python//python:pip.bzl", "pip_parse")
+# load("@test_torch_python//:defs.bzl", "interpreter")
+# load("@rules_python//python:pip.bzl", "pip_parse")
 
-# Create a central repo that knows about the dependencies needed from
-# requirements.txt.
-pip_parse(
-    name="python_deps",
-    python_interpreter_target=interpreter,
-    requirements_lock="//:requirements_lock.txt",
-)
+# # Create a central repo that knows about the dependencies needed from
+# # requirements.txt.
+# pip_parse(
+#     name="python_deps",
+#     python_interpreter_target=interpreter,
+#     requirements_lock="//:requirements_lock.txt",
+# )
 
-# Load the starlark macro which will define your dependencies.
-load("@python_deps//:requirements.bzl", "install_deps")
+# # Load the starlark macro which will define your dependencies.
+# load("@python_deps//:requirements.bzl", "install_deps")
 
 # Call it to define repos for your requirements.
-install_deps()
+# install_deps()
+
+# Poetry rules for managing Python dependencies
+
+# http_archive(
+#     name = "com_sonia_rules_poetry",
+#     sha256 = "8a7a6a5d2ef859ba4309929f3b4d61031f2a4bfed6f450f04ab09443246a4b5c",
+#     strip_prefix = "rules_poetry-ecd0d9c66b89403667304b11da3bd99764797a63",
+#     urls = ["https://github.com/soniaai/rules_poetry/archive/ecd0d9c66b89403667304b11da3bd99764797a63.tar.gz"],
+# )
+
+# load("@com_sonia_rules_poetry//rules_poetry:defs.bzl", "poetry_deps")
+
+# poetry_deps()
+
+# load("@com_sonia_rules_poetry//rules_poetry:poetry.bzl", "poetry")
+
+# poetry(
+#     name = "poetry",
+#     lockfile = "//:poetry.lock",
+#     pyproject = "//:pyproject.toml",
+#     # optional, if you would like to pull from pip instead of a Bazel cache
+#     # tags = ["no-remote-cache"],
+# )
+
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+http_archive(
+    name = "rules_conda",
+    sha256 = "ee187c4902f5f8da85fcba9943064fd38b2a75f80ed0a2844b34cf9e27cb5990",
+    url = "https://github.com/spietras/rules_conda/releases/download/0.2.0/rules_conda-0.2.0.zip"
+)
+
+load("@rules_conda//:defs.bzl", "conda_create", "load_conda", "register_toolchain")
+
+load_conda(
+    conda_version = "23.3.1",
+    installer = "miniforge",
+    install_mamba = True,
+    mamba_version = "1.4.2",
+    quiet = False,
+    timeout = 100,
+)
+
+conda_create(
+    name = "env",  # name of the environment
+    environment = "@//:empty_environment.yaml",  # label pointing to environment configuration file
+    use_mamba = True,  # Whether to use mamba to create the conda environment. If this is True, install_mamba must also be True
+    clean = False,  # True if conda cache should be cleaned (less space taken, but slower subsequent builds), default is False
+    quiet = False,  # True if conda output should be hidden True, default is True
+    timeout = 100,  # how many seconds each execute action can take, default is 3600
+)
+
+register_toolchain(env = "env")
