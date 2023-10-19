@@ -9,10 +9,20 @@ compile_pip_requirements(
     requirements_txt="requirements_lock.txt",
 )
 
+py_library(
+    name="workaround_torch",
+    srcs=[
+        "workaround_torch_101314_preload_cuda.py",
+    ],
+    deps=[
+        requirement("torch"),
+    ],
+)
+
 py_binary(
     name="test",
     srcs=["test.py"],
     deps=[
-        requirement("torch"),
+        ":workaround_torch",
     ],
 )
